@@ -11,6 +11,8 @@ def spec_white(resid, exog):
 
     Returns
     -------
+    dof : int
+        degrees of freedom
     stat : float
         test statistic
     pval : float
@@ -26,7 +28,9 @@ def spec_white(resid, exog):
     Assumes the OLS design matrix contains an intercept term and at least
     one variable. The intercept is removed to calculate the test statistic.
 
-    Degrees-of-freedom = nvar + nvar * (nvar + 1) / 2
+    Degrees-of-freedom (full rank) = nvar + nvar * (nvar + 1) / 2
+
+    Linearly dependent columns are removed to avoid singular matrix error.
 
     Reference
     ---------
@@ -37,17 +41,26 @@ def spec_white(resid, exog):
     x = np.asarray(exog)
     e = np.asarray(resid)
     if x.ndim == 1:
-        raise ValueError('x should have a constant and at least one variable')
+        raise ValueError('X should have a constant and at least one variable')
     nvar = x.shape[1] - 1
+    # add interaction terms
     i0, i1 = np.triu_indices(x.shape[1])
     exog = np.delete(x[:,i0]*x[:,i1], 0, 1)
     assert exog.shape[1] == nvar + nvar * (nvar + 1) / 2
-    sqe = e * e
+    # collinearity check - see _fit_collinear
+    atol=1e-14; rtol=1e-13
+    tol = atol + rtol * exog.var(0)
+    r = np.linalg.qr(exog, mode='r')
+    mask = np.abs(r.diagonal()) < np.sqrt(tol)
+    exog = exog[:,np.where(~mask)[0]]
+    # calculate test statistic
+    sqe = np.square(e)
     sqmndevs = sqe - np.mean(sqe)
     D = np.dot(exog.T, sqmndevs)
     devx = exog - np.mean(exog, axis=0)
-    B = np.dot(np.dot(devx.T, np.diag(np.square(sqmndevs))), devx)
-    stat = np.dot(np.dot(D, np.linalg.inv(B)), D)
+    B = np.linalg.multi_dot([devx.T, np.diag(np.square(sqmndevs)), devx])
+    stat = np.linalg.multi_dot([D, np.linalg.inv(B), D])
+    # chi-square test
     dof = devx.shape[1]
     pval = chisqprob(stat, dof)
-    return stat, pval
+    return dof, stat, pval
