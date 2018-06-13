@@ -1,7 +1,8 @@
 import numpy as np
-from scipy.stats import chisqprob
-from pandas import ExcelFile
+from scipy import stats
+import pandas as pd
 import sys
+import os
 
 def prep_white_spec_design_matrix(design, licheck='none'):
     '''
@@ -120,11 +121,14 @@ def spec_white(resid, exog, licheck='none'):
     sqmndevs = sqe - np.mean(sqe)
     D = np.dot(x.T, sqmndevs)
     devx = x - np.mean(x, axis=0)
-    B = np.linalg.multi_dot([devx.T, np.diag(np.square(sqmndevs)), devx])
-    stat = np.linalg.multi_dot([D, np.linalg.inv(B), D])
+    #B = np.linalg.multi_dot([devx.T, np.diag(np.square(sqmndevs)), devx])
+    devx *= sqmndevs[:,None]
+    B = devx.T.dot(devx)
+    #stat = np.linalg.multi_dot([D, np.linalg.inv(B), D])
+    stat = D.dot(np.linalg.solve(B, D))
     dof = devx.shape[1]
-    pval = chisqprob(stat, dof)
-    return dof, stat, pval
+    pval = stats.chi2.sf(stat, dof)
+    return stat, pval, dof
 
 #
 # toy program to test White's specification test.
@@ -140,23 +144,32 @@ def spec_white(resid, exog, licheck='none'):
 #   model4 : dof = 11 stat = 8.46  pval = 0.6714
 #
 def main():
-    xlsx = ExcelFile('../rundir/whitespectest.xlsx')
-    for sheet in xlsx.sheet_names:
-        print("Sheet =", sheet)
-        design = np.asarray(xlsx.parse(sheet))
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+    run_dir = os.path.join(cur_dir, "..\\rundir\\")
+    files = ['model1.csv', 'model2.csv', 'model3.csv', 'model4.csv']
+    for file in files:
+        mdl_file = os.path.join(run_dir, file)
+        mdl = np.asarray(pd.read_csv(mdl_file))
         # DV is in last column
-        lastcol = design.shape[1] - 1
-        dv = design[:, lastcol]
+        lastcol = mdl.shape[1] - 1
+        dv = mdl[:, lastcol]
         # create design matrix
-        design = np.concatenate((np.ones((design.shape[0], 1)), \
-            np.delete(design, lastcol, 1)), axis=1)
+        design = np.concatenate((np.ones((mdl.shape[0], 1)), \
+            np.delete(mdl, lastcol, 1)), axis=1)
         # perform OLS and generate residuals
-        resids = dv - np.dot(design, np.linalg.lstsq(design, dv)[0])
-        # perform White spec test. model3/model4 contain dummies.
-        wdof, wstat, wpval = spec_white(resids, design, 'qr')
-        print("White spec(qr): dof =", wdof, " stat =", wstat, " pval =", wpval)
-        wdof, wstat, wpval = spec_white(resids, design, 'cs')
-        print("White spec(cs): dof =", wdof, " stat =", wstat, " pval =", wpval)
+        resids = dv - np.dot(design, np.linalg.lstsq(design, dv, rcond=-1)[0])
+        # perform White spec test. wspec3/wspec4 contain dummies.
+        wres = spec_white(resids, design, 'qr')
+        print("White spec(qr): dof =", wres[0], " stat =", wres[1], " pval =", wres[2])
+        # compare results to SAS 9.3 output
+        if file == 'wspec1.csv':
+            np.testing.assert_almost_equal(wres, [3.251, 0.661, 5], decimal=3)
+        elif file == 'wspec2.csv':
+            np.testing.assert_almost_equal(wres, [6.070, 0.733, 9], decimal=3)
+        elif file == 'wspec3.csv':
+            np.testing.assert_almost_equal(wres, [6.767, 0.454, 7], decimal=3)
+        else:
+            np.testing.assert_almost_equal(wres, [8.462, 0.671, 11], decimal=3)
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
