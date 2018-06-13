@@ -56,7 +56,7 @@ def prep_white_spec_design_matrix(design, licheck='none'):
         idx1, idx2 = np.triu_indices(exog.shape[1], 1)
         e1 = exog[:,idx1]; e2 = exog[:,idx2]
         diff = np.abs(np.abs(np.sum(e1*e2, axis=0)) - \
-            np.sqrt(np.sum(e1*e1, axis=0))*np.sqrt(np.sum(e2*e2, axis=0)))
+            np.linalg.norm(e1,axis=0)*np.linalg.norm(e2,axis=0))
         mask = diff < atol
         unq = np.unique(mask*idx2)
         exog = exog[:,np.isin(np.arange(exog.shape[1]), unq[unq>0], invert=True)]
@@ -159,14 +159,14 @@ def main():
         # perform OLS and generate residuals
         resids = dv - np.dot(design, np.linalg.lstsq(design, dv, rcond=-1)[0])
         # perform White spec test. wspec3/wspec4 contain dummies.
-        wres = spec_white(resids, design, 'qr')
-        print("White spec(qr): dof =", wres[0], " stat =", wres[1], " pval =", wres[2])
+        wres = spec_white(resids, design, 'cs')
+        print("White spec(cs): dof =", wres[0], " stat =", wres[1], " pval =", wres[2])
         # compare results to SAS 9.3 output
-        if file == 'wspec1.csv':
+        if file == 'model1.csv':
             np.testing.assert_almost_equal(wres, [3.251, 0.661, 5], decimal=3)
-        elif file == 'wspec2.csv':
+        elif file == 'model2.csv':
             np.testing.assert_almost_equal(wres, [6.070, 0.733, 9], decimal=3)
-        elif file == 'wspec3.csv':
+        elif file == 'model3.csv':
             np.testing.assert_almost_equal(wres, [6.767, 0.454, 7], decimal=3)
         else:
             np.testing.assert_almost_equal(wres, [8.462, 0.671, 11], decimal=3)
