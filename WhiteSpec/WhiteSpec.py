@@ -119,13 +119,13 @@ def spec_white(resid, exog, licheck='none'):
     e = np.asarray(resid)
     sqe = np.square(e)
     sqmndevs = sqe - np.mean(sqe)
-    D = np.dot(x.T, sqmndevs)
+    d = np.dot(x.T, sqmndevs)
     devx = x - np.mean(x, axis=0)
     #B = np.linalg.multi_dot([devx.T, np.diag(np.square(sqmndevs)), devx])
     devx *= sqmndevs[:,None]
-    B = devx.T.dot(devx)
+    b = devx.T.dot(devx)
     #stat = np.linalg.multi_dot([D, np.linalg.inv(B), D])
-    stat = D.dot(np.linalg.solve(B, D))
+    stat = d.dot(np.linalg.solve(b, d))
     dof = devx.shape[1]
     pval = stats.chi2.sf(stat, dof)
     return stat, pval, dof
@@ -160,7 +160,7 @@ def main():
         resids = dv - np.dot(design, np.linalg.lstsq(design, dv, rcond=-1)[0])
         # perform White spec test. wspec3/wspec4 contain dummies.
         wres = spec_white(resids, design, 'cs')
-        print("White spec(cs): dof =", wres[0], " stat =", wres[1], " pval =", wres[2])
+        print("White spec(cs): stat =", wres[0], " pval =", wres[1], " dof =", wres[2])
         # compare results to SAS 9.3 output
         if file == 'model1.csv':
             np.testing.assert_almost_equal(wres, [3.251, 0.661, 5], decimal=3)
