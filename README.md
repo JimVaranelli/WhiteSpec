@@ -3,17 +3,17 @@ Python implementation of White's specification test. Version contained in WhiteS
 
 ## Parameters
 resid : array_like \
-\s\sOLS residuals \
+&nbsp;&nbsp;OLS residuals \
 exog : array_like \
-\s\sOLS design matrix
+&nbsp;&nbsp;OLS design matrix
 
 ## Returns
 stat : float \
-\s\stest statistic
+&nbsp;&nbsp;test statistic
 pval : float \
-\s\schi-square p-value for test statistic \
+&nbsp;&nbsp;chi-square p-value for test statistic \
 dof : int \
-\s\sdegrees of freedom
+&nbsp;&nbsp;degrees of freedom
 
 ## Notes
 Implements the two-moment specification test described by White's
