@@ -3,17 +3,17 @@ Python implementation of White's specification test. Version contained in WhiteS
 
 ## Parameters
 resid : array_like \
-&nbsp;&nbsp;OLS residuals \
+&nbsp;&nbsp;&nbsp;&nbsp;OLS residuals \
 exog : array_like \
-&nbsp;&nbsp;OLS design matrix
+&nbsp;&nbsp;&nbsp;&nbsp;OLS design matrix
 
 ## Returns
 stat : float \
-&nbsp;&nbsp;test statistic
+&nbsp;&nbsp;&nbsp;&nbsp;test statistic \
 pval : float \
-&nbsp;&nbsp;chi-square p-value for test statistic \
+&nbsp;&nbsp;&nbsp;&nbsp;chi-square p-value for test statistic \
 dof : int \
-&nbsp;&nbsp;degrees of freedom
+&nbsp;&nbsp;&nbsp;&nbsp;degrees of freedom
 
 ## Notes
 Implements the two-moment specification test described by White's
@@ -34,7 +34,7 @@ Degrees-of-freedom (full rank) = nvar + nvar * (nvar + 1) / 2
 Linearly dependent columns are removed to avoid singular matrix error.
 
 ## Reference
-White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct test for heteroscedasticity. Econometrica, 48: 817-838.
+White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct test for heteroskedasticity. Econometrica, 48: 817-838.
 
 ## Requirements
 Python 3.6 \
