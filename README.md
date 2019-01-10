@@ -2,18 +2,18 @@
 Python implementation of White's specification test. Version contained in WhiteSpec/WhiteSpecFn.py has been submitted to statsmodels package.
 
 ## Parameters
-resid : array_like
-    OLS residuals
-exog : array_like
-    OLS design matrix
+resid : array_like \
+\s\sOLS residuals \
+exog : array_like \
+\s\sOLS design matrix
 
 ## Returns
-stat : float
-    test statistic
-pval : float
-    chi-square p-value for test statistic
-dof : int
-    degrees of freedom
+stat : float \
+\s\stest statistic
+pval : float \
+\s\schi-square p-value for test statistic \
+dof : int \
+\s\sdegrees of freedom
 
 ## Notes
 Implements the two-moment specification test described by White's
@@ -37,9 +37,9 @@ Linearly dependent columns are removed to avoid singular matrix error.
 White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct test for heteroscedasticity. Econometrica, 48: 817-838.
 
 ## Requirements
-Python 3.6
-Numpy 1.13.1
-Scipy 0.19.1
+Python 3.6 \
+Numpy 1.13.1 \
+Scipy 0.19.1 \
 Pandas 0.20.3
 
 ## Running
